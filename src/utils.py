@@ -6,6 +6,7 @@ import random
 import json
 from pytz import timezone
 from tqdm import tqdm
+
 tqdm.pandas()
 from transformers import set_seed
 import numpy as np
@@ -19,28 +20,29 @@ from typing import Any, Union
 def get_curr_time() -> str:
     """Get current date and time in PST as str."""
     return datetime.now().astimezone(
-            timezone('US/Pacific')).strftime("%d/%m/%Y %H:%M:%S")
+        timezone('US/Pacific')).strftime("%d/%m/%Y %H:%M:%S")
 
 
-class Logger: 
+class Logger:
     """Class to write message to both output_dir/filename.txt and terminal."""
-    def __init__(self, output_dir: str=None, filename: str=None) -> None:
+
+    def __init__(self, output_dir: str = None, filename: str = None) -> None:
         if filename is not None:
             self.log = os.path.join(output_dir, filename)
 
-    def write(self, message: Any, show_time: bool=True) -> None:
+    def write(self, message: Any, show_time: bool = True) -> None:
         "write the message"
         message = str(message)
         if show_time:
             # if message starts with \n, print the \n first before printing time
-            if message.startswith('\n'): 
-                message = '\n'+get_curr_time()+' >> '+message[1:]
+            if message.startswith('\n'):
+                message = '\n' + get_curr_time() + ' >> ' + message[1:]
             else:
-                message = get_curr_time()+' >> '+message
-        print (message)
+                message = get_curr_time() + ' >> ' + message
+        print(message)
         if hasattr(self, 'log'):
             with open(self.log, 'a') as f:
-                f.write(message+'\n')
+                f.write(message + '\n')
 
 
 def set_all_seeds(seed: int) -> None:
@@ -48,19 +50,19 @@ def set_all_seeds(seed: int) -> None:
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
-    if torch.cuda.device_count()>0:
+    if torch.cuda.device_count() > 0:
         torch.cuda.manual_seed_all(seed)
     cudnn.benchmark = True
     set_seed(seed)
 
 
-
 class CycleIndex:
     """Class to generate batches of training ids, 
-    shuffled after each epoch.""" 
-    def __init__(self, indices:Union[int,list], batch_size: int,
-                 shuffle: bool=True) -> None:
-        if type(indices)==int:
+    shuffled after each epoch."""
+
+    def __init__(self, indices: Union[int, list], batch_size: int,
+                 shuffle: bool = True) -> None:
+        if type(indices) == int:
             indices = np.arange(indices)
         self.indices = indices
         self.num_samples = len(indices)
@@ -75,7 +77,7 @@ class CycleIndex:
         start, end = self.pointer, self.pointer + self.batch_size
         # If we have a full batch within this epoch, then get it.
         if end <= self.num_samples:
-            if end==self.num_samples:
+            if end == self.num_samples:
                 self.pointer = 0
                 if self.shuffle:
                     np.random.shuffle(self.indices)
@@ -84,13 +86,9 @@ class CycleIndex:
             return self.indices[start:end]
         # Otherwise, fill the batch with samples from next epoch.
         last_batch_indices_incomplete = self.indices[start:]
-        remaining = self.batch_size - (self.num_samples-start)
+        remaining = self.batch_size - (self.num_samples - start)
         self.pointer = remaining
         if self.shuffle:
             np.random.shuffle(self.indices)
-        return np.concatenate((last_batch_indices_incomplete, 
+        return np.concatenate((last_batch_indices_incomplete,
                                self.indices[:remaining]))
-    
-
-
-
