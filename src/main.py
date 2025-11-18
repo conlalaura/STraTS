@@ -94,14 +94,13 @@ if __name__ == "__main__":
     model_path_best = os.path.join(args.output_dir, 'checkpoint_best.bin')
 
     # load data
-    dataset = PretrainDataset(args) if args.pretrain == 1 else Dataset(args)
+    dataset = Dataset(args)
 
     # load model
-    model_class = {'strats': Strats}
-    model = model_class[args.model_type](args)
+    model = Strats(args)
     model.to(args.device)
-    count_parameters(args.logger, model)
-    if args.load_ckpt_path is not None:
+    count_parameters(args.logger, model)  # writes number of parameters etc. into a txt file
+    if args.load_ckpt_path is not None:  # load checkpoint if it exists
         curr_state_dict = model.state_dict()
         pt_state_dict = torch.load(args.load_ckpt_path)
         for k, v in pt_state_dict.items():
