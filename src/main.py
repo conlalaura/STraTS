@@ -2,7 +2,6 @@ import argparse
 import os
 from utils import Logger, set_all_seeds
 import torch
-from dataset_pretrain import PretrainDataset
 from dataset import Dataset
 from modeling_strats import Strats
 import numpy as np
