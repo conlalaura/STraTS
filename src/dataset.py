@@ -243,56 +243,11 @@ class Dataset:
             ind = self.train_cycler.get_batch_ind()
         if self.args.model_type in ['strats', 'istrats']:
             return self.get_batch_strats(ind)
-        elif self.args.model_type == 'grud':
-            return self.get_batch_grud(ind)
-        elif self.args.model_type == 'interpnet':
-            return self.get_batch_interpnet(ind)
         elif self.args.model_type in ['gru', 'tcn', 'sand']:
             return {'ts': torch.FloatTensor(self.X[ind]),
                     'demo': torch.FloatTensor(self.demo[ind]),
                     'labels': torch.FloatTensor(self.y[ind])}
 
-    def get_batch_grud(self, ind):
-        deltas = [self.deltas[i] for i in ind]
-        values = [self.values[i] for i in ind]
-        masks = [self.mask[i] for i in ind]
-        num_timestamps = np.array(list(map(len, deltas)))
-        max_timestamps = max(num_timestamps)
-        pad_lens = max_timestamps - num_timestamps
-        V = self.args.V
-        pad_mats = [np.zeros((l, V)) for l in pad_lens]
-        deltas = torch.FloatTensor(np.stack([np.concatenate((delta, pad), axis=0)
-                                             for delta, pad in zip(deltas, pad_mats)]))
-        values = torch.FloatTensor(np.stack([np.concatenate((delta, pad), axis=0)
-                                             for delta, pad in zip(values, pad_mats)]))
-        masks = torch.FloatTensor(np.stack([np.concatenate((delta, pad), axis=0)
-                                            for delta, pad in zip(masks, pad_mats)]))
-        return {'delta_t': deltas, 'x_t': values, 'm_t': masks,
-                'seq_len': torch.LongTensor(num_timestamps),
-                'demo': torch.FloatTensor(self.demo[ind]),
-                'labels': torch.FloatTensor(self.y[ind])}
-
-    def get_batch_interpnet(self, ind):
-        times = [self.times[i] for i in ind]
-        values = [self.values[i] for i in ind]
-        masks = [self.mask[i] for i in ind]
-        hmasks = [self.holdout_masks[i] for i in ind]
-
-        num_timestamps = np.array(list(map(len, times)))
-        max_timestamps = max(num_timestamps)
-        pad_lens = max_timestamps - num_timestamps
-        V = self.args.V
-        pad_mats = [np.zeros((l, V)) for l in pad_lens]
-        hmasks = torch.FloatTensor(np.stack([np.concatenate((delta, pad), axis=0)
-                                             for delta, pad in zip(hmasks, pad_mats)]))
-        values = torch.FloatTensor(np.stack([np.concatenate((delta, pad), axis=0)
-                                             for delta, pad in zip(values, pad_mats)]))
-        masks = torch.FloatTensor(np.stack([np.concatenate((delta, pad), axis=0)
-                                            for delta, pad in zip(masks, pad_mats)]))
-        times = torch.FloatTensor([t + [0] * p for t, p in zip(times, pad_lens)])
-        return {'t': times, 'x': values, 'm': masks, 'h': hmasks,
-                'demo': torch.FloatTensor(self.demo[ind]),
-                'labels': torch.FloatTensor(self.y[ind])}
 
     def get_batch_strats(self, ind):
         demo = torch.FloatTensor(self.demo[ind])  # N,D
