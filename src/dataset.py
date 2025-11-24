@@ -248,7 +248,6 @@ class Dataset:
                     'demo': torch.FloatTensor(self.demo[ind]),
                     'labels': torch.FloatTensor(self.y[ind])}
 
-
     def get_batch_strats(self, ind):
         demo = torch.FloatTensor(self.demo[ind])  # N,D
         num_obs = [len(self.values[i]) for i in ind]

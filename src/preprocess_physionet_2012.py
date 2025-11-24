@@ -5,7 +5,7 @@ import pickle
 import numpy as np
 
 
-RAW_DATA_PATH = '/data/datasets/physionet_2012'
+RAW_DATA_PATH = 'C:\\Users\\boni3\\DataspellProjects\\STraTS\\data\\datasets\\physionet_2012'
 
 
 def read_ts(raw_data_path, set_name):
@@ -39,9 +39,9 @@ def read_outcomes(raw_data_path, set_name):
 
 
 ts = pd.concat([read_ts(RAW_DATA_PATH, set_name) 
-                for set_name in ['a','b','c']])
+                for set_name in ['a','b']])
 oc = pd.concat([read_outcomes(RAW_DATA_PATH, set_name) 
-                for set_name in ['a','b','c']])
+                for set_name in ['a','b']])
 ts_ids = sorted(list(ts.ts_id.unique()))
 oc = oc.loc[oc.ts_id.isin(ts_ids)]
 
